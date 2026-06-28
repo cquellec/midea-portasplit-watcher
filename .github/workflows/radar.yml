@@ -1,33 +1,36 @@
 name: Radar Midea PortaSplit
 
-# Radar de réassort gratuit, dans le cloud (aucun PC requis).
-# Déclenché de façon FIABLE par un pinger externe (cron-job.org) toutes les ~10 min
-# via l'API workflow_dispatch. Le cron GitHub ci-dessous n'est qu'un filet de
-# secours (best-effort). Chaque run = 1 cycle rapide (~1 min).
+# Radar de réassort gratuit, dans le cloud (aucun PC requis), AUTO-PERPÉTUEL.
+#
+# Chaque run est une BOUCLE de ~5h30 qui vérifie toutes les 10 min via un `sleep`
+# interne (cadence 100% fiable, indépendante du scheduler GitHub). À la fin d'une
+# boucle réussie, le run REDÉCLENCHE le suivant lui-même (via DISPATCH_TOKEN) :
+# la chaîne ne s'arrête jamais, sans pinger externe ni action manuelle.
+# Le `concurrency` garantit qu'il n'y a jamais de chevauchement.
+# Le cron GitHub n'est qu'un filet de secours (best-effort) si la chaîne casse.
 on:
-  workflow_dispatch: {} # déclenché par le pinger (et manuellement)
+  workflow_dispatch: {}
   schedule:
-    - cron: '4,14,24,34,44,54 * * * *' # filet de secours (GitHub best-effort)
+    - cron: '7 */6 * * *' # filet de secours uniquement (GitHub best-effort)
 
 permissions:
-  contents: write # pour persister .monitor-state.json (anti-spam)
+  contents: write # persister .monitor-state.json (anti-spam)
 
 concurrency:
   group: radar
-  cancel-in-progress: false
+  cancel-in-progress: false # le successeur attend la fin du run courant
 
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 350 # > boucle 5h30, < max GitHub 360
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - run: npm install --omit=optional
-      - name: Scan + alerte (1 cycle)
-        run: npm run monitor -- --once
+      - name: Boucle radar (check toutes les 10 min pendant ~5h30)
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           NTFY_SERVER: ${{ secrets.NTFY_SERVER }}
@@ -35,15 +38,26 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-      - name: Persiste l'état (anti-spam, push robuste)
         run: |
-          if [[ -n "$(git status --porcelain .monitor-state.json)" ]]; then
-            git config user.name "radar-bot"
-            git config user.email "radar-bot@users.noreply.github.com"
-            git add .monitor-state.json
-            git commit -m "radar: update state [skip ci]"
-            for i in 1 2 3; do
-              git push && break
-              git pull --rebase --autostash origin main || true
-            done
-          fi
+          git config user.name "radar-bot"
+          git config user.email "radar-bot@users.noreply.github.com"
+          END=$(( $(date +%s) + 19800 )) # ~5h30
+          while [ "$(date +%s)" -lt "$END" ]; do
+            npm run monitor -- --once || true
+            if [[ -n "$(git status --porcelain .monitor-state.json)" ]]; then
+              git add .monitor-state.json
+              git commit -m "radar: update state [skip ci]" || true
+              for i in 1 2 3; do
+                git push && break
+                git pull --rebase --autostash origin main || true
+              done
+            fi
+            sleep 600
+          done
+      # Ne tourne QUE si la boucle a fini normalement (évite tout emballement si
+      # un run plante vite) => relance le run suivant, qui démarrera dès la fin
+      # de celui-ci (grâce au concurrency). Chaîne perpétuelle, zéro action.
+      - name: Auto-relève (perpétuation de la chaîne)
+        env:
+          GH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+        run: gh workflow run radar.yml -R "${{ github.repository }}" --ref main
