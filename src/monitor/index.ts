@@ -106,7 +106,7 @@ async function main(): Promise<void> {
   const cfg = loadAlertConfig();
 
   console.log(
-    `📡 Radar Midea PortaSplit — sources: Castorama · Boulanger · Optimea · ManoMano · Dealabs · 123comparer`,
+    `📡 Radar Midea PortaSplit — Castorama · Boulanger · Optimea · ManoMano · Dealabs · 123comparer · boutiques (MegElectro/JBS/Bruneau/Hemmera)`,
   );
   console.log(`   Canaux d'alerte actifs : ${activeChannels(cfg).join(', ')}`);
 

@@ -19,6 +19,7 @@ import { checkOptimeaVariants, OPTIMEA_URL } from '../retailers/optimea.js';
 import { getManoManoState, PRODUCT_URL as MANOMANO_URL } from '../manomano/api.js';
 import { fetchHtml } from '../lib/http.js';
 import { pool, withRetry } from '../lib/util.js';
+import { scanShops } from './shops.js';
 
 export interface Offer {
   source: string; // 'castorama' | 'boulanger' | 'optimea'
@@ -281,4 +282,5 @@ export const ALL_SCANNERS = [
   scanManoMano,
   scanDealabs,
   scanComparer,
+  scanShops,
 ];
