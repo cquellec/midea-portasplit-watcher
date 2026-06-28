@@ -112,14 +112,21 @@ async function main(): Promise<void> {
 
   // Test de la chaîne d'alerte (envoie une alerte factice sur tous les canaux).
   if (argv.includes('--test-alert')) {
-    console.log(`   Envoi d'une alerte de TEST…`);
+    console.log(`   Envoi de 2 alertes de TEST (1 par destination)…`);
     await dispatchAlert(cfg, [
       {
         source: 'test',
-        key: 'test',
-        label: 'TEST — ceci est une alerte de démonstration',
-        url: 'https://www.optimea.fr/product/climatiseur-split-mobile-midea/',
-        price: 999,
+        key: 'test-1',
+        label: 'TEST 1 — MegElectro 700€',
+        url: 'https://megelectro.com/produit/midea-mmcs-12hrn8-qrd0-climatiseur-mobile/',
+        price: 700,
+      },
+      {
+        source: 'test',
+        key: 'test-2',
+        label: 'TEST 2 — JBS 849,99€',
+        url: 'https://jbs-electromenager.com/products/climatiseur-mobile-midea-mmcs-12hrn8-qrd0',
+        price: 849.99,
       },
     ]);
     console.log(`   ✅ Test envoyé. Vérifie ton téléphone / tes notifications.`);

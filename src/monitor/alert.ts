@@ -44,12 +44,6 @@ export function activeChannels(cfg: AlertConfig): string[] {
   return out;
 }
 
-function buildMessage(offers: Offer[]): { title: string; body: string } {
-  const n = offers.length;
-  const title = `🎉 EN STOCK (${n}) — Midea PortaSplit`;
-  const body = offers.map((o) => `• ${o.label}`).join('\n');
-  return { title, body };
-}
 
 /** Les headers HTTP doivent être ASCII (ByteString) : on retire emoji/accents. */
 function asciiHeader(s: string): string {
@@ -108,26 +102,47 @@ function sendMacOS(title: string, body: string): Promise<void> {
   });
 }
 
-/** Envoie une alerte sur tous les canaux actifs. Ne rejette jamais. */
+/**
+ * Envoie UNE notification par destination (clic direct vers le marchand).
+ * Les offres partageant la même URL (ex. plusieurs magasins Castorama) sont
+ * regroupées en une seule notif pour éviter le spam. Ne rejette jamais.
+ */
 export async function dispatchAlert(cfg: AlertConfig, offers: Offer[]): Promise<void> {
   if (offers.length === 0) return;
-  const { title, body } = buildMessage(offers);
-  const url = offers[0]?.url ?? 'https://www.optimea.fr';
 
-  // Console (toujours, bien visible)
-  console.log(`\n\x1b[1m\x1b[42m\x1b[30m  ${title}  \x1b[0m`);
-  for (const o of offers) console.log(`   \x1b[32m→ ${o.label}\x1b[0m  \x1b[36m${o.url}\x1b[0m`);
+  // Regroupe par URL (= par destination cliquable).
+  const groups = new Map<string, Offer[]>();
+  for (const o of offers) {
+    const arr = groups.get(o.url) ?? [];
+    arr.push(o);
+    groups.set(o.url, arr);
+  }
 
-  const channels: Array<[string, Promise<void>]> = [
-    ['ntfy', sendNtfy(cfg, title, body, url)],
-    ['telegram', sendTelegram(cfg, title, body)],
-    ['webhook', sendWebhook(cfg, title, body, offers)],
-    ['macOS', cfg.macos ? sendMacOS(title, body) : Promise.resolve()],
-  ];
-  const results = await Promise.allSettled(channels.map(([, p]) => p));
+  console.log(`\n\x1b[1m\x1b[42m\x1b[30m  🎉 EN STOCK (${groups.size}) — Midea PortaSplit  \x1b[0m`);
+
+  const tasks: Array<[string, Promise<void>]> = [];
+  for (const [url, items] of groups) {
+    const first = items[0]!;
+    // Titre = libellé du marchand (+ nb d'offres si plusieurs au même endroit).
+    const title =
+      items.length > 1 ? `🎉 ${first.label} (+${items.length - 1})` : `🎉 ${first.label}`;
+    const body =
+      items.length > 1
+        ? items.map((o) => `• ${o.label}`).join('\n') + '\n👉 Clique pour ouvrir'
+        : `${first.label}\n👉 Clique pour ouvrir et commander`;
+
+    console.log(`   \x1b[32m→ ${title}\x1b[0m  \x1b[36m${url}\x1b[0m`);
+
+    tasks.push(['ntfy', sendNtfy(cfg, title, body, url)]);
+    tasks.push(['telegram', sendTelegram(cfg, `${title}\n${url}`, body)]);
+    tasks.push(['webhook', sendWebhook(cfg, title, body, items)]);
+    if (cfg.macos) tasks.push(['macOS', sendMacOS(title, body)]);
+  }
+
+  const results = await Promise.allSettled(tasks.map(([, p]) => p));
   results.forEach((r, i) => {
     if (r.status === 'rejected') {
-      const name = channels[i]?.[0] ?? '?';
+      const name = tasks[i]?.[0] ?? '?';
       console.error(`   ⚠️ canal "${name}" en échec : ${String(r.reason).slice(0, 120)}`);
     }
   });
