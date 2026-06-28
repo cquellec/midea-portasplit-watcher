@@ -4,7 +4,9 @@ name: Radar Midea PortaSplit
 # Lance un cycle du monitor toutes les ~10 min et push sur mobile (ntfy).
 on:
   schedule:
-    - cron: '*/10 * * * *' # toutes les 10 min (GitHub peut différer de quelques min)
+    # Minutes décalées (pas :00/:10…) pour éviter la congestion GitHub qui fait
+    # sauter les crons aux heures rondes. Best-effort : GitHub peut retarder.
+    - cron: '4,14,24,34,44,54 * * * *'
   workflow_dispatch: {} # bouton "Run workflow" manuel
 
 permissions:
