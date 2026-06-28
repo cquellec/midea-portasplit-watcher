@@ -23,12 +23,22 @@ Canaux d'alerte (cf. [.env.example](.env.example)) : **ntfy.sh** (push télépho
 zéro compte), **notif macOS**, **Telegram**, **webhook**. La console affiche
 toujours. `--once` = un seul cycle (pour un cron).
 
-**Le garder allumé jusqu'à lundi** (sinon le Mac s'endort) :
-```bash
-caffeinate -is npm run monitor          # empêche la veille tant que ça tourne
-```
-Pour un fonctionnement hands-off (auto-restart, survit au reboot), voir
-« Planification » plus bas (launchd/cron appelant `npm run monitor -- --once`).
+### Déploiement cloud GRATUIT (recommandé — aucun PC requis)
+
+Le radar tourne déjà dans le cloud via **GitHub Actions** (cron toutes les ~10 min,
+gratuit, illimité sur repo public). Mac éteint = aucun problème, les push ntfy
+arrivent quand même.
+
+- Workflow : [.github/workflows/radar.yml](.github/workflows/radar.yml) (`*/10 * * * *`)
+- Config : le topic ntfy est un **secret GitHub** `NTFY_TOPIC` (pas dans le code).
+  Ajoute d'autres canaux en secrets : `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `WEBHOOK_URL`.
+- État anti-spam : `.monitor-state.json` est committé par le bot ; une alerte n'est
+  envoyée que sur une vraie transition (rupture → dispo).
+- Lancer un cycle à la demande : onglet **Actions → Radar → Run workflow**.
+
+**Alternative locale** (Mac allumé) : `caffeinate -is npm run monitor` (empêche la
+veille). Pour un service local auto-démarré, un `launchd` appelant
+`npm run monitor -- --once` est possible.
 
 ## Démarrage rapide (vérif ponctuelle)
 
