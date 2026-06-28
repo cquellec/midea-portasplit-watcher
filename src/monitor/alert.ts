@@ -147,7 +147,10 @@ export async function dispatchAlert(cfg: AlertConfig, offers: Offer[]): Promise<
         ? items.map((o) => `• ${o.label}`).join('\n')
         : first.label) +
       '\n👉 Clique pour ouvrir/commander' +
-      (first.mapsUrl ? `\n📍 Itinéraire magasin : ${first.mapsUrl}` : '');
+      (first.mapsUrl
+        ? `\n⚠️ Sur la page, sélectionne bien LE magasin ci-dessus (le site peut en afficher un autre par défaut).` +
+          `\n📍 Itinéraire magasin : ${first.mapsUrl}`
+        : '');
     const tags = risky ? 'warning' : 'rotating_light,snowflake';
 
     console.log(`   \x1b[32m→ ${title}\x1b[0m  \x1b[36m${url}\x1b[0m`);
