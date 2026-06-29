@@ -2,9 +2,10 @@
   "knownKeys": [
     "castorama:delivery",
     "boulanger:store:F220",
+    "manomano:offer",
     "shops:megelectro",
     "shops:jbs"
   ],
   "blind": false,
-  "updatedAt": "2026-06-29T12:59:06.075Z"
+  "updatedAt": "2026-06-29T13:25:17.428Z"
 }
