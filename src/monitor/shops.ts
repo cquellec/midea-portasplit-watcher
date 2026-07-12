@@ -49,6 +49,13 @@ const SHOPS: Shop[] = [
     url: 'https://www.hemmera.fr/climatiseur-portable-midea-mmcs-12hrn8-3-5-kw.-pompe-a-chaleur-r32-kit-inclus/',
     verify: true,
   },
+  {
+  id: 'groupsumi',
+  name: 'GroupSumi',
+  kind: 'jsonld',
+  url: 'https://groupsumi.fr/chauffage/climatisation/climatiseur-mobile/climatiseur-et-deshumidificateur-portable-4-en-1-midea-portasplit-3-5-kw-13907811',
+  verify: true,
+},
 ];
 
 interface ShopState {
