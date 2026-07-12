@@ -3,7 +3,7 @@ import { extractJsonLd, findProductOffer } from '../lib/jsonld.js';
 
 export async function scanGroupSumi(timeoutMs = 20000) {
   const res = await fetchHtml(
-    'https://groupsumi.fr/chauffage/climatisation/climatiseur-mobile/climatiseur-et-deshumidificateur-portable-4-en-1-midea-portasplit-3-5-kw-13907811',
+    'https://groupsumi.fr/chauffage/climatiseur-mobile/climatiseur-et-deshumidificateur-portable-4-en-1-midea-portasplit-3-5-kw-13907811',
     timeoutMs
   );
 
@@ -12,10 +12,7 @@ export async function scanGroupSumi(timeoutMs = 20000) {
   }
 
   const offer = findProductOffer(extractJsonLd(res.html));
-
-  const inStock =
-    offer?.status === 'in_stock' || offer?.status === 'limited';
-
+  const inStock = offer?.status === 'in_stock' || offer?.status === 'limited';
   const price = offer?.price ?? null;
 
   const offers = inStock
@@ -24,7 +21,7 @@ export async function scanGroupSumi(timeoutMs = 20000) {
           source: 'groupsumi',
           key: 'groupsumi:offer',
           label: `GroupSumi — ${price ? `${price}€` : 'prix inconnu'}`,
-          url: 'https://groupsumi.fr/chauffage/climatisation/climatiseur-mobile/climatiseur-et-deshumidificateur-portable-4-en-1-midea-portasplit-3-5-kw-13907811',
+          url: 'https://groupsumi.fr/chauffage/climatiseur-mobile/climatiseur-et-deshumidificateur-portable-4-en-1-midea-portasplit-3-5-kw-13907811',
           price,
           risky: true,
         },
