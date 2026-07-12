@@ -20,6 +20,7 @@ import { getManoManoState, PRODUCT_URL as MANOMANO_URL } from '../manomano/api.j
 import { fetchHtml } from '../lib/http.js';
 import { pool, withRetry, PRICE_MAX } from '../lib/util.js';
 import { scanShops } from './shops.js';
+import { scanGroupSumi } from '../groupsumi/index.js';
 
 export interface Offer {
   source: string; // 'castorama' | 'boulanger' | 'optimea'
@@ -303,5 +304,6 @@ export const ALL_SCANNERS = [
   scanManoMano,
   scanDealabs,
   scanComparer,
+  scanGroupSumi,
   scanShops,
 ];
