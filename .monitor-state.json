@@ -1,8 +1,9 @@
 {
   "knownKeys": [
     "boulanger:store:F774",
-    "groupsumi:offer"
+    "groupsumi:offer",
+    "shops:jbs"
   ],
   "blind": false,
-  "updatedAt": "2026-07-21T02:15:24.809Z"
+  "updatedAt": "2026-07-21T02:18:39.711Z"
 }
