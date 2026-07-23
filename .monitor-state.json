@@ -1,5 +1,7 @@
 {
-  "knownKeys": [],
+  "knownKeys": [
+    "shops:jbs"
+  ],
   "blind": false,
-  "updatedAt": "2026-07-23T13:04:00.756Z"
+  "updatedAt": "2026-07-23T13:07:21.698Z"
 }
